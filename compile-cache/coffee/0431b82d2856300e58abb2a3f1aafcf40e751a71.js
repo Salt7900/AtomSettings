@@ -1,0 +1,57 @@
+(function() {
+  'use strict';
+  module.exports = function() {
+    this.initConfig({
+      coffeelint: {
+        grunt: {
+          src: ['Gruntfile.coffee']
+        },
+        lib: {
+          src: ['lib/**/*.coffee']
+        },
+        spec: {
+          src: ['spec/**/*.coffee']
+        }
+      },
+      lesslint: {
+        src: ['stylesheets/**/*.less']
+      },
+      watch: {
+        options: {
+          interrupt: true
+        },
+        grunt: {
+          files: ['Gruntfile.coffee'],
+          tasks: ['coffeelint:grunt']
+        },
+        lib: {
+          files: ['lib/**/*.coffee'],
+          tasks: ['coffeelint:lib']
+        },
+        spec: {
+          files: ['spec/**/*.coffee'],
+          tasks: ['coffeelint:spec']
+        },
+        stylesheets: {
+          files: ['stylesheets/**/*.less'],
+          tasks: ['lesslint']
+        }
+      }
+    });
+    this.loadNpmTasks('grunt-coffeelint');
+    this.loadNpmTasks('grunt-lesslint');
+    this.loadNpmTasks('grunt-apm');
+    this.loadNpmTasks('grunt-contrib-watch');
+    this.registerTask('lint', ['lesslint', 'coffeelint']);
+    this.registerTask('link', ['apm-link']);
+    this.registerTask('unlink', ['apm-unlink']);
+    this.registerTask('test', ['apm-test']);
+    this.registerTask('dev', ['apm-link', 'watch']);
+    return this.registerTask('default', ['lint', 'test']);
+  };
+
+}).call(this);
+
+//# sourceMappingURL=data:application/json;base64,ewogICJ2ZXJzaW9uIjogMywKICAiZmlsZSI6ICIiLAogICJzb3VyY2VSb290IjogIiIsCiAgInNvdXJjZXMiOiBbCiAgICAiL1VzZXJzL2JlbmZhbGxvbi8uYXRvbS9wYWNrYWdlcy9wcmV2aWV3L0dydW50ZmlsZS5jb2ZmZWUiCiAgXSwKICAibmFtZXMiOiBbXSwKICAibWFwcGluZ3MiOiAiQUFBQTtBQUFBLEVBQUEsWUFBQSxDQUFBO0FBQUEsRUFFQSxNQUFNLENBQUMsT0FBUCxHQUFpQixTQUFBLEdBQUE7QUFHZixJQUFBLElBQUMsQ0FBQSxVQUFELENBR0U7QUFBQSxNQUFBLFVBQUEsRUFDRTtBQUFBLFFBQUEsS0FBQSxFQUNFO0FBQUEsVUFBQSxHQUFBLEVBQUssQ0FBQyxrQkFBRCxDQUFMO1NBREY7QUFBQSxRQUVBLEdBQUEsRUFDRTtBQUFBLFVBQUEsR0FBQSxFQUFLLENBQUMsaUJBQUQsQ0FBTDtTQUhGO0FBQUEsUUFJQSxJQUFBLEVBQ0U7QUFBQSxVQUFBLEdBQUEsRUFBSyxDQUFDLGtCQUFELENBQUw7U0FMRjtPQURGO0FBQUEsTUFTQSxRQUFBLEVBQ0U7QUFBQSxRQUFBLEdBQUEsRUFBSyxDQUFDLHVCQUFELENBQUw7T0FWRjtBQUFBLE1BWUEsS0FBQSxFQUNFO0FBQUEsUUFBQSxPQUFBLEVBQ0U7QUFBQSxVQUFBLFNBQUEsRUFBVyxJQUFYO1NBREY7QUFBQSxRQUVBLEtBQUEsRUFDRTtBQUFBLFVBQUEsS0FBQSxFQUFPLENBQUMsa0JBQUQsQ0FBUDtBQUFBLFVBQ0EsS0FBQSxFQUFPLENBQUMsa0JBQUQsQ0FEUDtTQUhGO0FBQUEsUUFLQSxHQUFBLEVBQ0U7QUFBQSxVQUFBLEtBQUEsRUFBTyxDQUFDLGlCQUFELENBQVA7QUFBQSxVQUNBLEtBQUEsRUFBTyxDQUFDLGdCQUFELENBRFA7U0FORjtBQUFBLFFBUUEsSUFBQSxFQUNFO0FBQUEsVUFBQSxLQUFBLEVBQU8sQ0FBQyxrQkFBRCxDQUFQO0FBQUEsVUFDQSxLQUFBLEVBQU8sQ0FBQyxpQkFBRCxDQURQO1NBVEY7QUFBQSxRQVdBLFdBQUEsRUFDRTtBQUFBLFVBQUEsS0FBQSxFQUFPLENBQUMsdUJBQUQsQ0FBUDtBQUFBLFVBQ0EsS0FBQSxFQUFPLENBQUMsVUFBRCxDQURQO1NBWkY7T0FiRjtLQUhGLENBQUEsQ0FBQTtBQUFBLElBZ0NBLElBQUMsQ0FBQSxZQUFELENBQWMsa0JBQWQsQ0FoQ0EsQ0FBQTtBQUFBLElBaUNBLElBQUMsQ0FBQSxZQUFELENBQWMsZ0JBQWQsQ0FqQ0EsQ0FBQTtBQUFBLElBa0NBLElBQUMsQ0FBQSxZQUFELENBQWMsV0FBZCxDQWxDQSxDQUFBO0FBQUEsSUFtQ0EsSUFBQyxDQUFBLFlBQUQsQ0FBYyxxQkFBZCxDQW5DQSxDQUFBO0FBQUEsSUFzQ0EsSUFBQyxDQUFBLFlBQUQsQ0FBYyxNQUFkLEVBQXNCLENBQUMsVUFBRCxFQUFhLFlBQWIsQ0FBdEIsQ0F0Q0EsQ0FBQTtBQUFBLElBdUNBLElBQUMsQ0FBQSxZQUFELENBQWMsTUFBZCxFQUFzQixDQUFDLFVBQUQsQ0FBdEIsQ0F2Q0EsQ0FBQTtBQUFBLElBd0NBLElBQUMsQ0FBQSxZQUFELENBQWMsUUFBZCxFQUF3QixDQUFDLFlBQUQsQ0FBeEIsQ0F4Q0EsQ0FBQTtBQUFBLElBeUNBLElBQUMsQ0FBQSxZQUFELENBQWMsTUFBZCxFQUFzQixDQUFDLFVBQUQsQ0FBdEIsQ0F6Q0EsQ0FBQTtBQUFBLElBMENBLElBQUMsQ0FBQSxZQUFELENBQWMsS0FBZCxFQUFxQixDQUFDLFVBQUQsRUFBYSxPQUFiLENBQXJCLENBMUNBLENBQUE7V0EyQ0EsSUFBQyxDQUFBLFlBQUQsQ0FBYyxTQUFkLEVBQXlCLENBQUMsTUFBRCxFQUFTLE1BQVQsQ0FBekIsRUE5Q2U7RUFBQSxDQUZqQixDQUFBO0FBQUEiCn0=
+
+//# sourceURL=/Users/benfallon/.atom/packages/preview/Gruntfile.coffee

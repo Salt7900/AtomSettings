@@ -1,0 +1,4 @@
+'atom-text-editor':
+  'ctrl->': 'erb-helper:output'
+  'ctrl-.': 'erb-helper:eval'
+  'ctrl-#': 'erb-helper:comment'
