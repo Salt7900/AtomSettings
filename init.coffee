@@ -9,3 +9,11 @@
 # atom.workspace.observeTextEditors (editor) ->
 #   editor.onDidSave ->
 #     console.log "Saved! #{editor.getPath()}"
+
+atom.commands.add 'atom-workspace', 'comment-jsx', ->
+  atom.config.set('editor.commentStart', '{/*', {scopeSelector: '.source.js.jsx'})
+  atom.config.set('editor.commentEnd', '*/}', {scopeSelector: '.source.js.jsx'})
+  for selection in atom.workspace.getActiveTextEditor().selections
+    selection.toggleLineComments()
+  atom.config.unset('editor.commentStart', {scopeSelector: '.source.js.jsx'})
+  atom.config.unset('editor.commentEnd', {scopeSelector: '.source.js.jsx'})
