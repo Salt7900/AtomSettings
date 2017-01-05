@@ -2,4 +2,4 @@
 
 Adds syntax highlighting to Swift files in Atom.
 
-Contributions are greatly appreciated. Please fork this repository and open an pull request to add snippets, make grammar tweaks, etc.
+**NOTE**: I am currently looking for a new maintainer for this package.
