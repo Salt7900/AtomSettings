@@ -1,8 +1,8 @@
 "use strict";
 
-const {lstat, realpath} = require("../utils/fs.js");
 const {CompositeDisposable, Disposable, Emitter} = require("atom");
-const {isString}    = require("../utils/general.js");
+const {lstat, realpath, statify} = require("../utils/fs.js");
+const {isString, normalisePath} = require("../utils/general.js");
 const Storage       = require("../storage.js");
 const UI            = require("../ui.js");
 const Directory     = require("./directory.js");
@@ -18,8 +18,18 @@ class FileSystem {
 		this.emitter = new Emitter();
 		
 		this.disposables = new CompositeDisposable(
-			UI.onOpenFile(editor => this.get(editor.getPath()).addEditor(editor)),
-			UI.onSaveNewFile(args => this.get(args.file).addEditor(args.editor))
+			UI.onSaveNewFile(args => this.get(args.file).addEditor(args.editor)),
+			UI.onOpenFile(editor => {
+				const path = editor.getPath();
+				let entity = this.get(path);
+				
+				if("function" !== typeof entity.addEditor){
+					this.paths.delete(path);
+					entity = this.get(path);
+				}
+				
+				entity.addEditor(editor);
+			})
 		);
 	}
 	
@@ -29,10 +39,10 @@ class FileSystem {
 		this.emitter.dispose();
 		this.paths.forEach(path => path.destroy());
 		this.inodes.clear();
-		this.inodes = null;
-		this.paths = null;
-		this.emitter = null;
-		this.disposables = null;
+		this.inodes = new Map();
+		this.paths = new Map();
+		this.emitter = new Emitter();
+		this.disposables = new CompositeDisposable();
 	}
 	
 	
@@ -43,19 +53,24 @@ class FileSystem {
 	 * which can't be lstat are simply marked unreadable. This behaviour
 	 * can be disabled for nonexistent resources by passing `mustExist`.
 	 *
-	 * @param {String} path - Absolute pathname
-	 * @param {Boolean} [mustExist=false] - Return null on ENOENT
-	 * @return {Resource}
+	 * @param {String} path
+	 *    Absolute pathname.
+	 *
+	 * @param {Boolean} [mustExist=false]
+	 *    Return null on ENOENT.
+	 *
+	 * @param {EntityType} [typeHint=EntityType.FILE]
+	 *    Resource type to assume for unreadable or remote paths.
+	 *    Ignored if `mustExist` is given a truthy value.
+	 *
+	 * @returns {Resource}
 	 * @emits did-register
 	 */
-	get(path, mustExist = false){
+	get(path, mustExist = false, typeHint = EntityType.FILE){
 		const resource = this.paths.get(path);
 		
 		if(resource)
 			return resource;
-		
-		else if(!path)
-			throw new TypeError("Path cannot be empty");
 		
 		else{
 			lstat.lastError = null;
@@ -73,18 +88,21 @@ class FileSystem {
 					resource.setPath(path);
 					return resource;
 				}
-				else Storage.setPathInode(path, inode);
+				else Storage.setPathInode(normalisePath(path), inode);
 			}
 			
 			const {
 				isSymlink,
 				isDirectory,
 				realPath
-			} = this.resolveType(path, stats);
+			} = this.resolveType(path, stats || typeHint);
+			
+			if(stats && isSymlink)
+				stats.mode |= EntityType.SYMLINK;
 			
 			const resource = isDirectory
-				? new Directory(path, stats, isSymlink)
-				: new File(path, stats, isSymlink);
+				? new Directory(path, stats)
+				: new File(path, stats);
 			
 			this.paths.set(path, resource);
 			inode && this.inodes.set(inode, resource);
@@ -95,6 +113,7 @@ class FileSystem {
 				resource.onDidChangeRealPath(path => this.fixSymlink(resource, path.to)),
 				new Disposable(() => {
 					this.paths.delete(resource.path);
+					this.paths.delete(resource.path.replace(/\//g, "\\"));
 					if(inode && resource.stats.nlink < 2)
 						this.inodes.delete(inode);
 				})
@@ -115,6 +134,9 @@ class FileSystem {
 		};
 		
 		if(!stats) return type;
+		if("number" === typeof stats)
+			stats = statify({mode: stats});
+		
 		type.isDirectory = stats.isDirectory();
 		
 		if(stats.isSymbolicLink()){
@@ -132,9 +154,10 @@ class FileSystem {
 	
 	
 	fixPath(oldPath, newPath){
+		if(!oldPath || !newPath) return;
 		const resource = this.paths.get(oldPath);
 		
-		if(resource.path !== newPath)
+		if(resource && resource.path !== newPath)
 			resource.setPath(newPath);
 		
 		else{
