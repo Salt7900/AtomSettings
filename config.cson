@@ -12,8 +12,8 @@
       "th"
     ]
   core:
+    closeDeletedFileTabs: true
     disabledPackages: [
-      "wrap-guide"
       "emmet"
       "webbox-color"
     ]
@@ -25,6 +25,7 @@
       "._*"
       "Thumbs.db"
       "build/*"
+      "node_modules/*"
     ]
     telemetryConsent: "limited"
     themes: [
